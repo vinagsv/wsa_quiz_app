@@ -11,18 +11,17 @@
 // };
 
 // export default db;
-
 const mongoose = require("mongoose");
 require("dotenv").config();
 
 const db = () => {
-  mongoose;
-  connect(process.env.MONGODB_URI)
+  mongoose
+    .connect(process.env.MONGODB_URI)
     .then(() => {
-      console.log("mongodb connected😎...");
+      console.log("MongoDB connected 😎...");
     })
-    .catch(() => {
-      console.log("error in connecting to mongodb...");
+    .catch((err) => {
+      console.log("Error connecting to MongoDB:", err.message);
     });
 };
 

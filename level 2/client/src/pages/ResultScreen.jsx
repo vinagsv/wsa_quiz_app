@@ -93,7 +93,7 @@ const ResultScreen = () => {
           <h2 className="text-xl font-semibold text-center mb-4">
             Score Board
           </h2>
-          <p className="text-center text-gray-700 mb-4">
+          <p className="text-center text-gray-400 mb-4">
             You have played <strong>{quizzesPlayed}</strong> quiz
           </p>
           <div className="flex justify-center">
@@ -112,7 +112,7 @@ const ResultScreen = () => {
               </div>
             </div>
           </div>
-          <div className="flex justify-around mt-6">
+          <div className="flex justify-around mt-6 flex-wrap gap-4">
             <div className="text-center">
               <p className="font-semibold text-info">100%</p>
               <p className="text-sm text-gray-500">Completion</p>
@@ -120,6 +120,18 @@ const ResultScreen = () => {
             <div className="text-center">
               <p className="font-semibold text-success">{totalQuestions}</p>
               <p className="text-sm text-gray-500">Total Questions</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-success">
+                {correctAnswers.length}
+              </p>
+              <p className="text-sm text-gray-500">Correct Answers</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-error">
+                {incorrectAnswers.length}
+              </p>
+              <p className="text-sm text-gray-500">Wrong Answers</p>
             </div>
           </div>
         </div>
@@ -134,7 +146,7 @@ const ResultScreen = () => {
           ) : (
             userAnswers.map((qa, index) => (
               <div key={index} className="mb-4">
-                <p className="font-medium text-gray-200 mb-1">
+                <p className="font-medium text-gray-400 mb-1">
                   {String(index + 1).padStart(2, "0")}. {qa.question}
                 </p>
                 <p

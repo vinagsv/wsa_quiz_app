@@ -14,9 +14,6 @@ export default function App() {
   const showResultScreen = () => {
     setViewScreen("result");
   };
-  const restartQuiz = () => {
-    setViewScreen("welcome");
-  };
   return (
     <QuestionProvider>
       <div>
@@ -26,7 +23,9 @@ export default function App() {
         {viewScreen === "question" && (
           <QuestionScreen showResultScreen={showResultScreen} />
         )}
-        {viewScreen == "result" && <ResultScreen restartQuiz={restartQuiz} />}
+        {viewScreen == "result" && (
+          <ResultScreen showQuestionScreen={showQuestionScreen} />
+        )}
       </div>
     </QuestionProvider>
   );

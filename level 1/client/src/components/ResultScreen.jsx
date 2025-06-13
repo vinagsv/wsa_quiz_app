@@ -1,22 +1,38 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import QuizLogo from "./ui/QuizLogo";
 import Trophy from "../assets/trophy.png";
 import RestartIcon from "../assets/restart-icon.svg";
 import Card from "./ui/Card";
 import Button from "./ui/Button";
+import useQuestionContext from "../hooks/useQuestionContext";
+import handleError from "../utils/handleError";
+import fetchQuestionAPI from "../api/fetchQuestions";
 
 function RestartIconFC() {
   return <img src={RestartIcon} />;
 }
-export default function ResultScreen({ restartQuiz }) {
+export default function ResultScreen({ showQuestionScreen }) {
   const [loading, setLoading] = useState(false);
+  const { correctAnswers, totalQuestions, processQuestions } =
+    useQuestionContext();
 
-  //Hardcode values
-  const totalQuestions = 10;
-  const correctAnswers = 7;
+  const handleResponse = useCallback(
+    (responseData) => {
+      processQuestions(responseData.questions);
+      //Change screen
+      showQuestionScreen();
+    },
+    [processQuestions, showQuestionScreen]
+  );
 
-  let percentage = (correctAnswers / totalQuestions) * 100;
+  const beginQuiz = useCallback(
+    function () {
+      fetchQuestionAPI(handleResponse, handleError, setLoading);
+    }[handleResponse]
+  );
+
   let feedbackText = "YOU DID OK!";
+  let percentage = (correctAnswers / totalQuestions) * 100;
 
   if (percentage >= 90) {
     feedbackText = "EXCELLENT JOB";
@@ -43,10 +59,7 @@ export default function ResultScreen({ restartQuiz }) {
           </p>
         </div>
         <Button
-          onClick={() => {
-            setLoading(true);
-            restartQuiz();
-          }}
+          onClick={beginQuiz}
           loading={loading}
           loadingText="Restarting..."
           icon={<RestartIconFC />}

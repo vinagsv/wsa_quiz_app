@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import QuizLogo from "./ui/QuizLogo";
 import ProgressBar from "./ui/ProgressBar";
 import Button from "./ui/Button";
@@ -7,57 +7,93 @@ import Card from "./ui/Card";
 import NextArrow from "../assets/chevron-left-rounded.svg";
 import CorrectCheckMark from "../assets/white-checkmark.svg";
 import IncorrectCross from "../assets/incorrect-cross.svg";
+import useQuestionContext from "../hooks/useQuestionContext";
+import validateAnswerAPI from "../api/validateAnswer";
+import handleError from "../utils/handleError";
 
+// Component for Next Arrow icon
 function NextArrowIcon() {
   return <img src={NextArrow} alt="Next Question" />;
 }
+
 export default function QuestionScreen({ showResultScreen }) {
-  //track selected option
   const [userSelectedOption, setUserSelectedOption] = useState("");
-  //static question data
+  const [loading, setLoading] = useState(false);
 
-  const activeQuestion = {
-    _id: "question-1",
-    question: "What is the capital of India?",
-    options: [
-      { id: "option-1", value: "Mumbai" },
-      { id: "option-2", value: "Kolkatta" },
-      { id: "option-3", value: "New Delhi" },
-      { id: "option-4", value: "Bengaluru" },
-    ],
-    correctOptionId: "option-3",
-  };
+  const {
+    activeQuestion,
+    activeQuestionNumber,
+    totalQuestions,
+    updateQuestionStatus,
+    activeNextQuestion,
+  } = useQuestionContext();
 
-  const isAnswerCorrect = userSelectedOption === activeQuestion.correctOptionId;
+  const handleResponse = useCallback(
+    (responseData) => {
+      const isCorrectAnswer = responseData.status === 1;
+      updateQuestionStatus(isCorrectAnswer);
+    },
+    [updateQuestionStatus]
+  );
 
-  //if user has selected any option
+  const handleClick = useCallback(
+    (selectedOption) => {
+      setUserSelectedOption(selectedOption.id);
+
+      validateAnswerAPI(
+        activeQuestion._id,
+        selectedOption.id,
+        handleResponse,
+        handleError,
+        setLoading
+      );
+    },
+    [activeQuestion._id, handleResponse]
+  );
+
+  useEffect(() => {
+    setUserSelectedOption("");
+  }, [activeQuestion._id]);
+
   const hasAttempted = Boolean(userSelectedOption);
+
+  const isFinalQuestion = useMemo(() => {
+    return activeQuestionNumber === totalQuestions;
+  }, [activeQuestionNumber, totalQuestions]);
+
   return (
     <section className="question-section">
       <QuizLogo />
       <ProgressBar />
       <div className="question-content">
         <Card className="question-card">
-          <div className="question-number">1/5</div>
+          <div className="question-number">
+            {activeQuestionNumber}/{totalQuestions}
+          </div>
 
           <p className="question-text">{activeQuestion.question}</p>
 
           <div className="question-options">
             {activeQuestion.options.map((option) => {
               const isThisSelected = option.id === userSelectedOption;
-              const isOptionCorrect = isThisSelected && isAnswerCorrect;
-              const isOptionIncorrect = isThisSelected && !isAnswerCorrect;
+              const isOptionCorrect =
+                isThisSelected && activeQuestion.isAnswerCorrect;
+              const isOptionIncorrect =
+                isThisSelected && !activeQuestion.isAnswerCorrect;
+              const showLoading = isThisSelected && loading;
+
               return (
                 <button
+                  key={activeQuestion._id + "-" + option.id}
                   className={clsx(
                     "option",
                     !hasAttempted && "not-answered",
+                    showLoading && "loading",
                     isThisSelected && "selected",
                     isOptionCorrect && "correct-answer",
                     isOptionIncorrect && "incorrect-answer"
                   )}
-                  key={option.id}
-                  onClick={() => setUserSelectedOption(option.id)}
+                  onClick={() => handleClick(option)}
                   disabled={hasAttempted}
                 >
                   {option.value}
@@ -72,7 +108,7 @@ export default function QuestionScreen({ showResultScreen }) {
                         <img src={CorrectCheckMark} alt="Correct-answer" />
                       )}
                       {isOptionIncorrect && (
-                        <img src={IncorrectCross} alt="Correct-answer" />
+                        <img src={IncorrectCross} alt="Incorrect-answer" />
                       )}
                     </span>
                   ) : (
@@ -82,15 +118,22 @@ export default function QuestionScreen({ showResultScreen }) {
               );
             })}
           </div>
-          <Button
-            disabled={!hasAttempted}
-            icon={<NextArrowIcon />}
-            iconPosition="right"
-            size="small"
-            onClick={showResultScreen}
-          >
-            Next
-          </Button>
+
+          {isFinalQuestion ? (
+            <Button onClick={showResultScreen} disabled={!hasAttempted}>
+              Submit
+            </Button>
+          ) : (
+            <Button
+              disabled={!hasAttempted}
+              icon={<NextArrowIcon />}
+              iconPosition="right"
+              size="small"
+              onClick={activeNextQuestion}
+            >
+              Next
+            </Button>
+          )}
         </Card>
       </div>
     </section>

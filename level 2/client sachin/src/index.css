@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+::-webkit-scrollbar-track{
+    background-color: #0f368a;
+}
+::-webkit-scrollbar{
+    width: 10px;
+    background-color: #1f3fdb;
+}
+::-webkit-scrollbar-thumb{
+    background-color: #074489;
+}

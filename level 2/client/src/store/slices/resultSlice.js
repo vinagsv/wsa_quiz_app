@@ -22,7 +22,7 @@ const resultSlice = createSlice({
       })
       .addCase(fetchCompletedQuizApi.fulfilled, (state, action) => {
         state.loading = false;
-        state.status = action.payload.status;
+        state.status = action.payload.success || false; // Use success field from response
         state.correctAnswers = action.payload.correct_questions || [];
         state.incorrectAnswers = action.payload.incorrect_questions || [];
       })
